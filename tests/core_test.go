@@ -63,32 +63,43 @@ func TestKeySaveReload(t *testing.T) {
 
 //TestCipher .
 func TestCipher(t *testing.T) {
-  keys, err := core.GetKey(keyPath)
+  keySend, err := core.GetKey(keyPath)
+  if err != nil {
+    t.Fatalf("Error reading key: %v\n", err)
+    return
+  }
+  keyReceive, err := core.GetKey(keyPath)
   if err != nil {
     t.Fatalf("Error reading key: %v\n", err)
     return
   }
   list := []byte{15, 211, 218, 155, 207, 209, 212, 102, 241, 192, 130, 92, 10, 92, 213, 236, 172, 190, 189, 213, 116, 66, 8, 33, 132, 16, 66, 8, 33, 132, 16}
   //list := []byte{200, 166, 141, 215, 211, 66, 55, 245, 7, 183, 83, 15, 192, 57, 118, 110, 186, 145, 209, 127, 28, 54, 180, 68, 13, 122, 155, 105, 108, 110, 239}
-  if err := testEncriptDecript(keys, list, true); err != nil {
+  if err := testEncriptDecript(keySend, keyReceive, list, true); err != nil {
     t.Fatalf("Error: %v\n", err)
     return
   }
+  keySend.SaveKey(keyPath)
 }
 
 //Testn .
 func TestCypherN(t *testing.T) {
-  keys, err := core.GetKey(keyPath)
+  keySend, err := core.GetKey(keyPath)
+  if err != nil {
+    t.Fatalf("Error reading key: %v\n", err)
+    return
+  }
+  keyReceive, err := core.GetKey(keyPath)
   if err != nil {
     t.Fatalf("Error reading key: %v\n", err)
     return
   }
   fmt.Printf("start test")
   nn := 0
-  list := make([]byte, keys.GetKeySize(), keys.GetKeySize())
+  list := make([]byte, keySend.GetKeySize(), keySend.GetKeySize())
   for {
     rand.Read(list)
-    if err := testEncriptDecript(keys, list, false); err != nil {
+    if err := testEncriptDecript(keySend, keyReceive, list, false); err != nil {
       t.Fatalf("Error: %v\n", err)
       return
     }
@@ -97,12 +108,13 @@ func TestCypherN(t *testing.T) {
       fmt.Println(nn)
     }
     if testNumber == nn {
-      return
+      break
     }
   }
+  keySend.SaveKey(keyPath)
 }
 
-func testEncriptDecript(keys *core.CipherCore, list []byte, verbose bool) error {
+func testEncriptDecript(keySend *core.CipherCore, keyReceive *core.CipherCore, list []byte, verbose bool) error {
   if verbose {
     fmt.Printf("list: %v\n", list)
   }
@@ -110,13 +122,13 @@ func testEncriptDecript(keys *core.CipherCore, list []byte, verbose bool) error 
   for ii, val := range list {
     listm[ii] = val
   }
-  keys.ResetKeyIndexes()
-  keys.Cipher(list)
+  if err := keySend.Cipher(nil, list); err != nil {
+    return err
+  }
   if verbose {
     fmt.Printf("encr: %v\n", list)
   }
-  keys.ResetKeyIndexes()
-  keys.Cipher(list)
+  keyReceive.Cipher(nil, list)
   if verbose {
     fmt.Printf("decr: %v\n", list)
   }
@@ -134,4 +146,18 @@ func testEncriptDecript(keys *core.CipherCore, list []byte, verbose bool) error 
     return fmt.Errorf("Error plain versus decrypt on data\n")
   }
   return nil
+}
+
+func TestEncryptFile(t *testing.T) {
+  os.Remove("./filee")
+  if err := core.EncryptFile("./fileTest", "./filee", keyPath); err != nil {
+    t.Fatalf("Error: %v\n", err)
+  }
+}
+
+func TestDecryptFile(t *testing.T) {
+  os.Remove("./filed")
+  if err := core.DecryptFile("./filee", "./filed", keyPath); err != nil {
+    t.Fatalf("Error: %v\n", err)
+  }
 }
