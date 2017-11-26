@@ -1,4 +1,6 @@
-package: github.com/freignat91/cipher
+package: github.com/freignat91/cipher3
 import:
+- package: github.com/gorilla/mux
+  version: ^1.6.0
 - package: github.com/spf13/cobra
-
+  version: ^0.0.1

@@ -13,9 +13,8 @@ import (
 
 //CreateKeyCmd create the main key
 var CreateKeyCmd = &cobra.Command{
-  Use:   "createKey [keysPath/name]",
-  Short: "Create cipher keys",
-  Long:  `Create cipher keys`,
+  Use:   "createKey [keysPath] [dimension] [size]",
+  Short: "Create cipher key",
   Run: func(cmd *cobra.Command, args []string) {
     if err := cipherCli.createCipherKey(cmd, args); err != nil {
       fmt.Printf("Error: %v\n", err)
@@ -26,22 +25,20 @@ var CreateKeyCmd = &cobra.Command{
 
 func init() {
   RootCmd.AddCommand(CreateKeyCmd)
-  CreateKeyCmd.Flags().StringP("dimension", "d", "3", "number of dimension: default 3")
-  CreateKeyCmd.Flags().StringP("size", "s", "16384", "dimension size: should be a multiple of 64, at least 16384, default 16384")
-  CreateKeyCmd.Flags().BoolP("random", "r", false, "add manual random string")
+  CreateKeyCmd.Flags().BoolP("random", "r", false, "add manual random keybord inputs to ensure key is random")
 }
 
 func (m *cipherCLI) createCipherKey(cmd *cobra.Command, args []string) error {
-  if len(args) < 1 {
-    return fmt.Errorf("need key file path as argument. usage: cipher createKeys --di--size [size]")
+  if len(args) < 3 {
+    return fmt.Errorf("usage: cipher3 createKey [keysPath] [dimension] [size]")
   }
-  dimension, err := strconv.Atoi(cmd.Flag("dimension").Value.String())
+  dimension, err := strconv.Atoi(args[1])
   if err != nil {
-    return fmt.Errorf("option --dimension is not a number")
+    return fmt.Errorf("dimension is not a number")
   }
-  keyBitSize, err := strconv.Atoi(cmd.Flag("size").Value.String())
+  keyBitSize, err := strconv.Atoi(args[2])
   if err != nil {
-    return fmt.Errorf("option --size is not a number")
+    return fmt.Errorf("size is not a number")
   }
   path := args[0]
   var randomList = make([]string, dimension, dimension)
