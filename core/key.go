@@ -2,9 +2,20 @@ package core
 
 import "crypto/rand"
 
-func getRandomKey(size int, verbose bool) *[]byte {
+func getRandomKey(randomStr string, size int, verbose bool) *[]byte {
   key := make([]byte, size, size)
   rand.Read(key)
+  if randomStr != "" {
+    data := []byte(randomStr)
+    ll := 0
+    for cc, val := range key {
+      key[cc] = val ^ data[ll]
+      ll++
+      if ll >= len(data) {
+        ll = 0
+      }
+    }
+  }
   reDistribute(&key)
   return &key
 }

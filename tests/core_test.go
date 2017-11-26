@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 
 //TestKeySaveReload .
 func TestKeySaveReload(t *testing.T) {
-  keys1, err := core.CreateKey(3, 256, false, false)
+  keys1, err := core.CreateKey(3, 256, nil, false, false)
   if err != nil {
     t.Fatalf("Error creating key: %v\n", err)
     return

@@ -188,7 +188,7 @@ execute 'make test' to launch the project tests
 create a new key and write it on the path [keypath]
 -d or --dimension: the number of dimension of the key, default 3
 -s or --size: the size of the dimension key, default 16384
--r add manual random input
+-r add manual random input, one per dimension, all keyboard characters is accepted, any size. It's used have true random dimension keys
 
 ## cipher3 encryptFile [sourcefilePath] [targetFilePath] [keyFilePath]
 

@@ -27,7 +27,7 @@ type CipherIndex struct {
 }
 
 //CreateKey .
-func CreateKey(dimension int, pSize int, verbose bool, debug bool) (*CipherCore, error) {
+func CreateKey(dimension int, pSize int, randomList []string, verbose bool, debug bool) (*CipherCore, error) {
   if pSize%64 != 0 {
     return nil, fmt.Errorf("number of bits should be a multiple of 64")
   }
@@ -37,12 +37,15 @@ func CreateKey(dimension int, pSize int, verbose bool, debug bool) (*CipherCore,
   if verbose {
     fmt.Printf("Compute key dimension: %d size: %d bits\n", dimension, pSize)
   }
+  if randomList == nil {
+    randomList = make([]string, dimension, dimension)
+  }
 
   //find two random prime size sqrt(keyBitsize)
   space := make([]*CipherKey, dimension, dimension)
   done := 0
   for ii := range space {
-    key := getRandomKey(pSize, verbose)
+    key := getRandomKey(randomList[ii], pSize, verbose)
     space[ii] = &CipherKey{key: *key}
     done++
     if verbose {
