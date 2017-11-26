@@ -169,7 +169,11 @@ The only restriction of this way of working is that only B can authenticate A us
 - execute: make install
 - then the command cipher3 is available
 
-For Ubuntu, you have a pre-build cipher3.ubuntu file you can use without cloning and building the projet.
+For Ubuntu, you have a pre-build cipher3.ubuntu file you can use without cloning and building the project.
+
+# Test
+
+execute 'make test' to launch the project tests
 
 # Usage
 
@@ -181,3 +185,26 @@ For Ubuntu, you have a pre-build cipher3.ubuntu file you can use without cloning
 
 not yet achieved...
 ...
+
+## cipher3 createKey keyPath -d [dimension] -s [size] -r
+
+create a new key and write it on the path [keypath]
+-d or --dimension: the number of dimension of the key, default 3
+-s or --size: the size of the dimension key, default 16384
+-r add manual random input
+
+## cipher3 encryptFile [sourcefilePath] [targetFilePath] [keyFilePath]
+
+- sourcefilePath: the file to encrypt
+- targetFilePath: the resulting encrypted file
+- keyFilePath: the key to use
+
+speed: ~70 MB / sec
+
+## cipher3 decryptFile [sourcefilePath] [targetFilePath] [keyFilePath]
+
+- sourcefilePath: the file to decrypt
+- targetFilePath: the resulting plain file
+- keyFilePath: the key to use
+
+speed: ~70 MB / sec

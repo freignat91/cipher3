@@ -26,7 +26,7 @@ func EncryptFile(sourcePath string, targetPath string, keyPath string) error {
   if err := writeHeader(fileo, keys.index); err != nil {
     return err
   }
-  data := make([]byte, 10000, 10000)
+  data := make([]byte, 100000, 100000)
   for {
     data = data[:cap(data)]
     n, err := filei.Read(data)
@@ -74,15 +74,15 @@ func DecryptFile(sourcePath string, targetPath string, keyPath string) error {
     return errf
   }
   defer fileo.Close()
-  data := make([]byte, 10000, 10000)
+  data := make([]byte, 100000, 100000)
   nn, err := readHeader(sourcePath, keys.index, data)
   if err != nil {
     return err
   }
-  fmt.Printf("nn: %d\n", nn)
+  //fmt.Printf("nn: %d\n", nn)
   header := make([]byte, nn, nn)
   filei.Read(header)
-  fmt.Printf("header (%d): [%s]\n", nn, string(header))
+  //fmt.Printf("header (%d): [%s]\n", nn, string(header))
   for {
     data = data[:cap(data)]
     n, err := filei.Read(data)
@@ -121,7 +121,7 @@ func readHeader(sourcePath string, index *CipherIndex, data []byte) (int, error)
   for ii := range index.indexes {
     fmt.Sscanf(buf, "%x-", &indexValue)
     index.indexes[ii] = indexValue
-    fmt.Printf("index %d: %x\n", ii, indexValue)
+    //fmt.Printf("index %d: %x\n", ii, indexValue)
     nn = strings.Index(buf, " ") + 1
     nt += nn
     if nn < 0 {
