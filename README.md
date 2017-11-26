@@ -183,9 +183,6 @@ execute 'make test' to launch the project tests
 - -v verbose, display information during command execution
 - -debug: display more information during command execution
 
-not yet achieved...
-...
-
 ## cipher3 createKey keyPath -d [dimension] -s [size] -r
 
 create a new key and write it on the path [keypath]
