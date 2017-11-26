@@ -171,7 +171,7 @@ The only restriction of this way of working is that only B can authenticate A us
 - execute: make install
 - then the command cipher3 is available
 
-For Ubuntu, you have a pre-build cipher3.ubuntu file you can use without cloning and building the project.
+For Ubuntu, win64 and osx, you have a pre-build cipher3 files in ./bin, you can use directly without building the project.
 
 # Test
 

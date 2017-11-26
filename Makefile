@@ -46,3 +46,11 @@ check:
 
 test:   
 	@go test ./tests -v
+
+cross:
+	GOOS=windows
+	GOARCH=amd64
+	output_name=cipher3.exe
+	@env GOOS=linux GOARCH=amd64 go build -o ./bin/cipher3.linux64 $(REPO)/$(NAME)
+	@env GOOS=darwin GOARCH=amd64 go build -o ./bin/cipher3.osx $(REPO)/$(NAME)
+	@env GOOS=windows GOARCH=amd64 go build -o ./bin/cipher3.exe $(REPO)/$(NAME)
