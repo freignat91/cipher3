@@ -4,7 +4,7 @@ SHELL := /bin/sh
 BASEDIR := $(shell echo $${PWD})
 
 # build variables (provided to binaries by linker LDFLAGS below)
-VERSION := 0.0.1
+VERSION := 1.0.0
 
 LDFLAGS=-ldflags "-X=main.Version=$(VERSION) -X=main.Build=$(BUILD)"
 
@@ -23,10 +23,11 @@ CHECKSRC := $(shell find . -type f -name '*.go' -not -name '*.pb.go' -not -path 
 OWNER := freignat91
 PROJECT := cipher3
 NAME :=  cipher3
+SERVER := testServer
 
 REPO := github.com/$(OWNER)/$(PROJECT)
 
-all: version check install
+all: version check install install-server
 
 version:
 	@echo "version: $(VERSION)"
@@ -36,6 +37,9 @@ clean:
 
 install:
 	@go install $(LDFLAGS) $(REPO)/$(NAME)
+
+install-server:
+	@go install $(LDFLAGS) $(REPO)/$(SERVER)
 
 fmt:
 	@gofmt -s -l -w $(CHECKSRC)

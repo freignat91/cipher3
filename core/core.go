@@ -28,9 +28,6 @@ type CipherIndex struct {
 
 //CreateKey .
 func CreateKey(dimension int, pSize int, randomList []string, verbose bool, debug bool) (*CipherCore, error) {
-  if pSize%64 != 0 {
-    return nil, fmt.Errorf("number of bits should be a multiple of 64")
-  }
   if dimension <= 0 {
     return nil, fmt.Errorf("invalide number of dimension, shoud be >0")
   }
@@ -73,17 +70,35 @@ func (keys *CipherCore) SaveKey(path string) error {
   if errc != nil {
     return errc
   }
-  for ii := range keys.space {
-    if _, err := file.WriteString(keys.keyToString(ii)); err != nil {
-      return err
-    }
+  skey := keys.ToString()
+  if _, err := file.WriteString(skey); err != nil {
+    return err
   }
   file.Close()
   return nil
 }
 
+//Copy .
+func (keys *CipherCore) Copy() *CipherCore {
+  skey := keys.ToString()
+  key, _ := ReadKey(skey)
+  return key
+}
+
+//ToString .
+func (keys *CipherCore) ToString() string {
+  ret := ""
+  for ii := range keys.space {
+    if ii > 0 {
+      ret += "\n"
+    }
+    ret += keys.keyToString(ii)
+  }
+  return ret
+}
+
 func (keys *CipherCore) keyToString(num int) string {
-  return fmt.Sprintf("%x-%x-", keys.index.indexes[num], keys.space[num].key)
+  return fmt.Sprintf("%05x%x", keys.index.indexes[num], keys.space[num].key)
 }
 
 //GetKey .
@@ -92,23 +107,24 @@ func GetKey(path string) (*CipherCore, error) {
   if err != nil {
     return nil, err
   }
-  list := strings.Split(string(data), "-")
-  space := make([]*CipherKey, len(list)/2, len(list)/2)
-  indexes := make([]int, len(list)/2, len(list)/2)
-  nn := 0
-  for ii := 0; ii < len(list); ii = ii + 2 {
-    if len(list[ii]) == 0 {
-      break
-    }
+  return ReadKey(string(data))
+}
+
+//ReadKey .
+func ReadKey(skey string) (*CipherCore, error) {
+  list := strings.Split(skey, "\n")
+  dimension := len(list)
+  space := make([]*CipherKey, dimension, dimension)
+  indexes := make([]int, dimension, dimension)
+  for ii, buf := range list {
     index := 0
-    fmt.Sscanf(list[ii], "%x", &index)
-    indexes[nn] = index
-    key := make([]byte, len(list[ii+1])/2, len(list[ii+1])/2)
-    fmt.Sscanf(list[ii+1], "%x", &key)
-    space[nn] = &CipherKey{key: key}
-    nn++
+    fmt.Sscanf(buf[0:5], "%x", &index)
+    indexes[ii] = index
+    key := make([]byte, (len(buf)-5)/2, (len(buf)-5)/2)
+    fmt.Sscanf(buf[5:], "%x", &key)
+    space[ii] = &CipherKey{key: key}
   }
-  kindex := &CipherIndex{indexes: indexes, values: make([]byte, len(list)/2, len(list)/2)}
+  kindex := &CipherIndex{indexes: indexes, values: make([]byte, dimension, dimension)}
   keys := CipherCore{space: space, index: kindex, size: len(space[0].key)}
   keys.initIndexesValues()
   return &keys, nil

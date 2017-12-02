@@ -4,8 +4,9 @@ import (
   "fmt"
   "io"
   "os"
-  "strings"
 )
+
+const bufferSize = 500000
 
 //EncryptFile .
 func EncryptFile(sourcePath string, targetPath string, keyPath string) error {
@@ -26,7 +27,7 @@ func EncryptFile(sourcePath string, targetPath string, keyPath string) error {
   if err := writeHeader(fileo, keys.index); err != nil {
     return err
   }
-  data := make([]byte, 100000, 100000)
+  data := make([]byte, bufferSize, bufferSize)
   for {
     data = data[:cap(data)]
     n, err := filei.Read(data)
@@ -37,21 +38,18 @@ func EncryptFile(sourcePath string, targetPath string, keyPath string) error {
       return err
     }
     data = data[:n]
-    //fmt.Printf("%d: read: (%d):%v\n\n", nn, len(data), data)
     keys.Cipher(keys.index, data)
-    //fmt.Printf("%d: enc: (%d):%v\n", nn, len(datac), datac)
     if _, err := fileo.Write(data); err != nil {
       return err
     }
   }
-  //fmt.Printf("end: %d\n", lastN)
   keys.SaveKey(keyPath)
   return nil
 }
 
 func writeHeader(file *os.File, index *CipherIndex) error {
   for _, indexValue := range index.indexes {
-    if _, err := file.WriteString(fmt.Sprintf("%x ", indexValue)); err != nil {
+    if _, err := file.WriteString(fmt.Sprintf("%05x", indexValue)); err != nil {
       return err
     }
   }
@@ -74,15 +72,11 @@ func DecryptFile(sourcePath string, targetPath string, keyPath string) error {
     return errf
   }
   defer fileo.Close()
-  data := make([]byte, 100000, 100000)
-  nn, err := readHeader(sourcePath, keys.index, data)
-  if err != nil {
-    return err
+  errh := readHeader(filei, keys.index)
+  if errh != nil {
+    return errh
   }
-  //fmt.Printf("nn: %d\n", nn)
-  header := make([]byte, nn, nn)
-  filei.Read(header)
-  //fmt.Printf("header (%d): [%s]\n", nn, string(header))
+  data := make([]byte, bufferSize, bufferSize)
   for {
     data = data[:cap(data)]
     n, err := filei.Read(data)
@@ -93,41 +87,32 @@ func DecryptFile(sourcePath string, targetPath string, keyPath string) error {
       return err
     }
     data = data[:n]
-    //fmt.Printf("%d: read: (%d):%v\n\n", nn, len(data), data)
     keys.Cipher(keys.index, data)
-    //fmt.Printf("%d: enc: (%d):%v\n", nn, len(datac), datac)
     if _, err := fileo.Write(data); err != nil {
       return err
     }
   }
-  //fmt.Printf("end: %d\n", lastN)
   return nil
 }
 
-func readHeader(sourcePath string, index *CipherIndex, data []byte) (int, error) {
-  file, errf := os.OpenFile(sourcePath, os.O_RDWR, 0666)
-  if errf != nil {
-    return 0, errf
-  }
-  defer file.Close()
-  n, err := file.Read(data)
-  if err != nil {
-    return 0, err
-  }
-  buf := string(data[:n])
-  nn := 0
-  nt := 0
+func readHeader(filei *os.File, index *CipherIndex) error {
   indexValue := 0
+  data := make([]byte, 5, 5)
   for ii := range index.indexes {
-    fmt.Sscanf(buf, "%x-", &indexValue)
-    index.indexes[ii] = indexValue
-    //fmt.Printf("index %d: %x\n", ii, indexValue)
-    nn = strings.Index(buf, " ") + 1
-    nt += nn
-    if nn < 0 {
-      return 0, fmt.Errorf("Header format error")
+    _, err := filei.Read(data)
+    if err != nil {
+      return err
     }
-    buf = buf[nn:]
+    fmt.Sscanf(string(data), "%5x", &indexValue)
+    index.indexes[ii] = indexValue
   }
-  return nt, nil
+  return nil
+}
+
+func (keys *CipherCore) displayIndexes(label string) {
+  fmt.Printf(label)
+  for _, val := range keys.index.indexes {
+    fmt.Printf("%x ", val)
+  }
+  fmt.Println("")
 }
